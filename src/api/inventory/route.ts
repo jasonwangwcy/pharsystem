@@ -8,6 +8,7 @@ export async function GET() {
     const medicines = await prisma.medicine.findMany()
     return NextResponse.json(medicines)
   } catch (error) {
+    console.error(error)
     return NextResponse.json({ error: 'Failed to fetch medicines.' }, { status: 500 })
   }
 }
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(newMedicine)
   } catch (error) {
+    console.error(error)
     return NextResponse.json({ error: 'Failed to create medicine.' }, { status: 500 })
   }
 }
