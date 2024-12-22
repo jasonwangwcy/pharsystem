@@ -1,3 +1,28 @@
+# Node modules (已經有了)
 node_modules
+
+# 環境變數檔
 .env
-.vscode/   
+
+# VSCode設定
+.vscode/
+
+# --- Next.js 專案常見忽略項目 ---
+
+# Next.js 產生的 .next 資料夾 (打包 / build 內容)
+.next
+
+# 可能的 build / dist 資料夾 (若你有自訂輸出路徑)
+dist
+build
+
+# Vercel 部署相關 (假如使用 Vercel CLI)
+.vercel
+
+# coverage (若有使用 Jest 或其他工具產生測試覆蓋率報告)
+coverage
+
+# 其他常見忽略項 ---
+*.log        # 日誌檔
+*.DS_Store   # macOS 產生的檔案
+Thumbs.db    # Windows 產生的檔案
