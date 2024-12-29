@@ -1,71 +1,59 @@
-// src/app/prescription/page.tsx
-"use client"
+'use client';
 
-import { FormEvent, useState } from 'react'
+import { useState } from 'react';
 
 export default function PrescriptionPage() {
-  const [medicineId, setMedicineId] = useState('')
-  const [useAmount, setUseAmount] = useState<number>(0)
-  const [message, setMessage] = useState('')
+  const [patientId, setPatientId] = useState('');
+  const [items, setItems] = useState([{ medicineId: '', quantity: '' }]);
 
-  async function handlePrescriptionSubmit(e: FormEvent) {
-    e.preventDefault()
-    setMessage('')
+  const handleAddItem = () => {
+    setItems([...items, { medicineId: '', quantity: '' }]);
+  };
 
-    if (!medicineId || useAmount <= 0) {
-      setMessage('請輸入正確的藥品 ID 與使用數量')
-      return
-    }
-
-    try {
-      // 這裡你可自行設計 API:
-      // 1. 直接 PATCH /api/inventory
-      // 2. 或是 POST /api/orders?type=prescription
-      // ... 依你的需求自訂
-      const res = await fetch('/api/inventory', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ medicineId, useAmount }),
-      })
-      if (!res.ok) {
-        throw new Error('開藥失敗')
-      }
-      setMessage('開藥成功！')
-      setMedicineId('')
-      setUseAmount(0)
-    } catch (err) {
-      console.error(err)
-      setMessage('開藥失敗，請稍後再試。')
-    }
-  }
+  const handleSubmit = async () => {
+    await fetch('/api/prescriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patientId, items }),
+    });
+    alert('處方新增成功！');
+  };
 
   return (
-    <main>
+    <div>
       <h1>藥師開藥</h1>
-      <form onSubmit={handlePrescriptionSubmit} style={{ marginTop: '1rem' }}>
-        <div>
-          <label>藥品 ID：</label>
+      <input
+        type="text"
+        placeholder="病例號"
+        value={patientId}
+        onChange={(e) => setPatientId(e.target.value)}
+      />
+      {items.map((item, index) => (
+        <div key={index}>
           <input
             type="text"
-            value={medicineId}
-            onChange={(e) => setMedicineId(e.target.value)}
+            placeholder="藥品ID"
+            value={item.medicineId}
+            onChange={(e) => {
+              const newItems = [...items];
+              newItems[index].medicineId = e.target.value;
+              setItems(newItems);
+            }}
           />
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <label>使用數量：</label>
           <input
             type="number"
-            value={useAmount}
-            onChange={(e) => setUseAmount(Number(e.target.value))}
+            placeholder="數量"
+            value={item.quantity}
+            onChange={(e) => {
+              const newItems = [...items];
+              newItems[index].quantity = e.target.value;
+              setItems(newItems);
+            }}
           />
         </div>
-        <button type="submit" style={{ marginTop: 8 }}>
-          開藥
-        </button>
-      </form>
-      {message && (
-        <p style={{ marginTop: 16, color: 'blue' }}>{message}</p>
-      )}
-    </main>
-  )
+      ))}
+      <button onClick={handleAddItem}>添加更多藥品</button>
+      <button onClick={handleSubmit}>提交處方</button>
+    </div>
+  );
 }

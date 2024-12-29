@@ -1,57 +1,75 @@
-// prisma/seed.ts
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
 
-// 初始化 Prisma Client
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
+
+// Helper function to generate random IDs similar to real-world identification numbers
+function generatePatientId() {
+  return "D" + Math.random().toString().slice(2, 11); // Generates IDs like D123456789
+}
 
 async function main() {
-  // Step 1: 建立 20 筆 Medicine
-  const medicineNames = [
-    'Aspirin', 'Paracetamol', 'Amoxicillin', 'Ibuprofen', 'Metformin',
-    'Omeprazole', 'Lisinopril', 'Atorvastatin', 'Simvastatin', 'Levothyroxine',
-    'Prednisone', 'Azithromycin', 'Amlodipine', 'Doxycycline', 'Ciprofloxacin',
-    'Cetirizine', 'Loratadine', 'Metronidazole', 'Pantoprazole', 'Losartan'
-  ]
+  // 中藥名稱
+  const medicines = [
+    { name: "黃耆", code: "MC-001", quantity: 200, price: 50.0 },
+    { name: "人參", code: "MC-002", quantity: 150, price: 120.0 },
+    { name: "當歸", code: "MC-003", quantity: 100, price: 80.0 },
+    { name: "川芎", code: "MC-004", quantity: 300, price: 60.0 },
+    { name: "茯苓", code: "MC-005", quantity: 500, price: 30.0 },
+    { name: "甘草", code: "MC-006", quantity: 250, price: 40.0 },
+    { name: "紅花", code: "MC-007", quantity: 100, price: 70.0 },
+    { name: "白芍", code: "MC-008", quantity: 80, price: 90.0 },
+    { name: "枸杞", code: "MC-009", quantity: 400, price: 25.0 },
+    { name: "熟地", code: "MC-010", quantity: 200, price: 110.0 },
+  ];
 
-  const medicinesData = medicineNames.map((name, index) => ({
-    name,
-    description: `Description for ${name}`,
-    stock: Math.floor(Math.random() * 100) + 1, // 隨機庫存 1~100
-  }))
+  // 病人資料
+  const patients = Array.from({ length: 10 }).map((_, i) => ({
+    recordNumber: generatePatientId(),
+  }));
 
-  // createMany 不會回傳新資料的 id，所以我們改用 Promise.all + create
-  // 來拿到每筆回傳的 record，取得 id。
-  const createdMedicines = []
-  for (const medData of medicinesData) {
-    const med = await prisma.medicine.create({
-      data: medData,
-    })
-    createdMedicines.push(med)
+  // 插入 Medicine 資料
+  for (const medicine of medicines) {
+    await prisma.medicine.create({ data: medicine });
   }
 
-  // Step 2: 建立 20 筆 Order
-  // 每筆 Order 都會隨機參考一個 Medicine 的 id
-  for (let i = 0; i < 20; i++) {
-    const randomMed = createdMedicines[Math.floor(Math.random() * createdMedicines.length)]
-    const quantity = Math.floor(Math.random() * 50) + 1 // 隨機數量 1~50
+  // 插入 Patient 資料
+  for (const patient of patients) {
+    await prisma.patient.create({ data: patient });
+  }
 
+  // 插入 Order 和 OrderItem 資料
+  for (let i = 0; i < 5; i++) {
     await prisma.order.create({
       data: {
-        medicineId: randomMed.id,
-        quantity,
+        items: {
+          create: [
+            { medicineId: i + 1, quantity: 50 },
+            { medicineId: i + 2, quantity: 30 },
+          ],
+        },
       },
-    })
+    });
   }
 
-  console.log('✅ Successfully seeded 20 medicines and 20 orders!')
+  // 插入 Prescription 資料
+  for (let i = 0; i < 5; i++) {
+    await prisma.prescription.create({
+      data: {
+        patientId: i + 1,
+        medicineId: i + 1,
+        quantity: 20,
+      },
+    });
+  }
+
+  console.log('Seed data added successfully!');
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
   })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

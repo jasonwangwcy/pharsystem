@@ -1,67 +1,50 @@
-// src/app/orders/page.tsx
-"use client"
+'use client';
 
-import { FormEvent, useState } from 'react'
+import { useState } from 'react';
 
-export default function OrdersPage() {
-  const [medicineId, setMedicineId] = useState('')
-  const [quantity, setQuantity] = useState<number>(0)
-  const [message, setMessage] = useState('')
+export default function OrderPage() {
+  const [items, setItems] = useState([{ medicineId: '', quantity: '' }]);
 
-  async function handleOrderSubmit(e: FormEvent) {
-    e.preventDefault()
-    setMessage('')
+  const handleAddItem = () => {
+    setItems([...items, { medicineId: '', quantity: '' }]);
+  };
 
-    if (!medicineId || quantity <= 0) {
-      setMessage('請輸入正確的藥品 ID 與數量')
-      return
-    }
+  const handleInputChange = (index: number, field: 'medicineId' | 'quantity', value: string) => {
+    const updatedItems = [...items];
+    updatedItems[index][field] = value;
+    setItems(updatedItems);
+  };
 
-    try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ medicineId, quantity }),
-      })
-      if (!res.ok) {
-        throw new Error('下訂單失敗')
-      }
-      setMessage('訂單已送出！')
-      setMedicineId('')
-      setQuantity(0)
-    } catch (err) {
-      console.error(err)
-      setMessage('訂單失敗，請稍後再試。')
-    }
-  }
+  const handleSubmit = async () => {
+    await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
+    });
+    alert('訂單新增成功！');
+  };
 
   return (
-    <main>
-      <h1>下訂單</h1>
-      <form onSubmit={handleOrderSubmit} style={{ marginTop: '1rem' }}>
-        <div>
-          <label>藥品 ID：</label>
+    <div>
+      <h1>新增訂單</h1>
+      {items.map((item, index) => (
+        <div key={index}>
           <input
             type="text"
-            value={medicineId}
-            onChange={(e) => setMedicineId(e.target.value)}
+            placeholder="藥品ID"
+            value={item.medicineId}
+            onChange={(e) => handleInputChange(index, 'medicineId', e.target.value)}
           />
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <label>數量：</label>
           <input
             type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
+            placeholder="數量"
+            value={item.quantity}
+            onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
           />
         </div>
-        <button type="submit" style={{ marginTop: 8 }}>
-          送出訂單
-        </button>
-      </form>
-      {message && (
-        <p style={{ marginTop: 16, color: 'blue' }}>{message}</p>
-      )}
-    </main>
-  )
+      ))}
+      <button onClick={handleAddItem}>添加更多藥品</button>
+      <button onClick={handleSubmit}>提交訂單</button>
+    </div>
+  );
 }

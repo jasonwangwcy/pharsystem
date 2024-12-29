@@ -1,31 +1,16 @@
-// src/app/api/inventory/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/src/lib/db'
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-// GET /api/inventory
+const prisma = new PrismaClient();
+
 export async function GET() {
   try {
-    const medicines = await prisma.medicine.findMany()
-    return NextResponse.json(medicines)
+    // 從 Medicine 表中抓取所有資料
+    const medicines = await prisma.medicine.findMany();
+
+    return NextResponse.json(medicines); // 返回 JSON 資料
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Failed to fetch medicines.' }, { status: 500 })
-  }
-}
-
-// POST /api/inventory
-export async function POST(request: NextRequest) {
-  try {
-    const data = await request.json()
-    const { name, description, stock } = data
-
-    const newMedicine = await prisma.medicine.create({
-      data: { name, description, stock },
-    })
-
-    return NextResponse.json(newMedicine)
-  } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Failed to create medicine.' }, { status: 500 })
+    console.error('Error fetching medicines:', error);
+    return NextResponse.json({ error: 'Failed to fetch medicines.' }, { status: 500 });
   }
 }

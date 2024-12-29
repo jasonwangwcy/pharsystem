@@ -1,44 +1,33 @@
-// src/app/api/orders/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/src/lib/db'
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-// GET /api/orders => 取得所有的訂單
-export async function GET() {
+const prisma = new PrismaClient();
+
+export async function POST(req: Request) {
   try {
-    const orders = await prisma.order.findMany({
-      include: { medicine: true },
-    })
-    return NextResponse.json(orders)
-  } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Failed to fetch orders.' }, { status: 500 })
-  }
-}
-
-// POST /api/orders => 建立新訂單，並且會同時改動 Medicine 庫存
-export async function POST(request: NextRequest) {
-  try {
-    const data = await request.json()
-    const { medicineId, quantity } = data
-
-    // 建立訂單
+    const { items } = await req.json(); // items: [{ medicineId, quantity }]
+    
+    // 新增訂單與訂單明細
     const order = await prisma.order.create({
-      data: { medicineId, quantity },
-    })
-
-    // 減少對應 medicine 的庫存
-    await prisma.medicine.update({
-      where: { id: medicineId },
       data: {
-        stock: {
-          decrement: quantity,
+        items: {
+          create: items, // [{ medicineId: 1, quantity: 50 }, { medicineId: 2, quantity: 30 }]
         },
       },
-    })
+      include: { items: true },
+    });
 
-    return NextResponse.json(order)
+    // 更新每種藥品的庫存
+    for (const item of items) {
+      await prisma.medicine.update({
+        where: { id: item.medicineId },
+        data: { quantity: { increment: item.quantity } },
+      });
+    }
+
+    return NextResponse.json(order);
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Failed to create order.' }, { status: 500 })
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to create order.' }, { status: 500 });
   }
 }

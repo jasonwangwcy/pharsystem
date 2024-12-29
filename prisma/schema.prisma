@@ -1,31 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model Medicine {
+  name          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  code          String         @unique
+  price         Float
+  quantity      Int            @default(0)
+  id            Int            @id @default(autoincrement())
+  orders        OrderItem[]
+  prescriptions Prescription[]
 }
 
-model Medicine {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  stock       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // 關鍵: 宣告對應的關聯欄位
-  orders Order[] // 表示一個 Medicine 對應到多個 Order
+model Patient {
+  id            Int            @id @default(autoincrement())
+  recordNumber  String         @unique
+  createdAt     DateTime       @default(now())
+  prescriptions Prescription[]
 }
 
 model Order {
-  id         String   @id @default(uuid())
-  medicineId String
+  createdAt DateTime    @default(now())
+  id        Int         @id @default(autoincrement())
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  medicineId Int
+  quantity   Int      @default(0)
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
+  order      Order    @relation(fields: [orderId], references: [id])
+}
+
+model Prescription {
+  id         Int      @id @default(autoincrement())
+  patientId  Int
+  medicineId Int
   quantity   Int
   createdAt  DateTime @default(now())
-
-  // 關鍵: 在 Order 這邊宣告對應的 medicine 關聯
-  // 並指明 fields: [medicineId], references: [id]
-  medicine Medicine @relation(fields: [medicineId], references: [id])
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
+  patient    Patient  @relation(fields: [patientId], references: [id])
 }
