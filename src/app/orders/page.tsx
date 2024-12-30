@@ -43,8 +43,14 @@ export default function OrderPage() {
           />
         </div>
       ))}
-      <button onClick={handleAddItem}>添加更多藥品</button>
-      <button onClick={handleSubmit}>提交訂單</button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
+        <button style={{ padding: '10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={handleAddItem}>
+          添加更多藥品
+        </button>
+        <button style={{ padding: '10px', backgroundColor: '#008CBA', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={handleSubmit}>
+          提交訂單
+        </button>
+      </div>
     </div>
   );
 }

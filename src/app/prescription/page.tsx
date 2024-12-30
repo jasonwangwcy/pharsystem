@@ -4,56 +4,80 @@ import { useState } from 'react';
 
 export default function PrescriptionPage() {
   const [patientId, setPatientId] = useState('');
-  const [items, setItems] = useState([{ medicineId: '', quantity: '' }]);
-
-  const handleAddItem = () => {
-    setItems([...items, { medicineId: '', quantity: '' }]);
-  };
+  const [medicineId, setMedicineId] = useState('');
+  const [quantity, setQuantity] = useState('');
 
   const handleSubmit = async () => {
-    await fetch('/api/prescriptions', {
+    // 檢查數據有效性
+    if (!patientId || !medicineId || !quantity || parseInt(quantity, 10) <= 0) {
+      alert('請填寫所有欄位，且數量必須大於 0！');
+      return;
+    }
+
+    const response = await fetch('/api/prescriptions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ patientId, items }),
+      body: JSON.stringify({
+        patientId: parseInt(patientId, 10),
+        medicineId: parseInt(medicineId, 10),
+        quantity: parseInt(quantity, 10),
+      }),
     });
-    alert('處方新增成功！');
+
+    if (response.ok) {
+      alert('處方新增成功！');
+      setMedicineId('');
+      setQuantity('');
+    } else {
+      const errorData = await response.json();
+      alert(`處方新增失敗：${errorData.error}`);
+    }
   };
 
   return (
     <div>
       <h1>藥師開藥</h1>
-      <input
-        type="text"
-        placeholder="病例號"
-        value={patientId}
-        onChange={(e) => setPatientId(e.target.value)}
-      />
-      {items.map((item, index) => (
-        <div key={index}>
-          <input
-            type="text"
-            placeholder="藥品ID"
-            value={item.medicineId}
-            onChange={(e) => {
-              const newItems = [...items];
-              newItems[index].medicineId = e.target.value;
-              setItems(newItems);
-            }}
-          />
-          <input
-            type="number"
-            placeholder="數量"
-            value={item.quantity}
-            onChange={(e) => {
-              const newItems = [...items];
-              newItems[index].quantity = e.target.value;
-              setItems(newItems);
-            }}
-          />
-        </div>
-      ))}
-      <button onClick={handleAddItem}>添加更多藥品</button>
-      <button onClick={handleSubmit}>提交處方</button>
+      <div>
+        <label>病例號</label>
+        <input
+          type="text"
+          placeholder="病例號"
+          value={patientId}
+          onChange={(e) => setPatientId(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>藥品 ID</label>
+        <input
+          type="text"
+          placeholder="藥品 ID"
+          value={medicineId}
+          onChange={(e) => setMedicineId(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>數量</label>
+        <input
+          type="number"
+          placeholder="數量"
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+        />
+      </div>
+      <button
+        style={{
+          padding: '10px',
+          backgroundColor: '#4CAF50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          marginTop: '20px',
+        }}
+        onClick={handleSubmit}
+      >
+        提交處方
+      </button>
     </div>
   );
 }
