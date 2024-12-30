@@ -37,17 +37,17 @@ export default function PrescriptionPage() {
   return (
     <div>
       <h1>藥師開藥</h1>
-      <div>
-        <label>病例號</label>
+      <div style={{ marginBottom: '10px' }}>
+        <label style={{ marginRight: '10px' }}>病人ID</label>
         <input
           type="text"
-          placeholder="病例號"
+          placeholder="病人ID"
           value={patientId}
           onChange={(e) => setPatientId(e.target.value)}
         />
       </div>
-      <div>
-        <label>藥品 ID</label>
+      <div style={{ marginBottom: '10px' }}>
+        <label style={{ marginRight: '10px' }}>藥品 ID</label>
         <input
           type="text"
           placeholder="藥品 ID"
@@ -55,8 +55,8 @@ export default function PrescriptionPage() {
           onChange={(e) => setMedicineId(e.target.value)}
         />
       </div>
-      <div>
-        <label>數量</label>
+      <div style={{ marginBottom: '10px' }}>
+        <label style={{ marginRight: '10px' }}>數量</label>
         <input
           type="number"
           placeholder="數量"
