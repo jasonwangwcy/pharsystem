@@ -22,7 +22,7 @@ export default function RootLayout({
           <Link href="/inventory" style={{ marginRight: 20 }}>庫存列表</Link>
           <Link href="/orders" style={{ marginRight: 20 }}>下訂單</Link>
           <Link href="/prescription" style={{ marginRight: 20 }}>藥師開藥</Link>
-          <Link href="/patient" style={{ marginRight: 20 }}>病人用藥記錄</Link>
+          <Link href="/patient" style={{ marginRight: 20 }}>病人記錄</Link>
         </nav>
 
         {/* 頁面主內容 */}
